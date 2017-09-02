@@ -206,8 +206,20 @@ const InputPanel = new Lang.Class({
         if (x + panel_width > monitor.x + monitor.width) {
             x = monitor.x + monitor.width;
         }
-
-        this._cursor.set_position(x, y);
+        /**
+         * 魔改开始
+         * 在hdpi下chrome的panel位置会是正常的两倍
+         * vs code的会是原来的一半……
+         * 打字时很治疗颈椎病……
+         * 插入了一个函数判断获得焦点的窗口的名字而后做一些调整
+         * 就酱……
+         */
+        let adjust = this.myDetect();
+        let ratio = adjust.ratio;
+        let x_offset = adjust.x_offset;
+        let y_offset = adjust.y_offset;
+        this._cursor.set_position(x * ratio + x_offset, y * ratio + y_offset);
+        /*** end ***/
         this._cursor.set_size((w == 0? 1 : w), (h == 0? 1 : h));
 
         this.panel._arrowSide = this._arrowSide;
@@ -222,7 +234,39 @@ const InputPanel = new Lang.Class({
         else
             this.hide();
     },
-
+    /**
+     * 借助窗体名字判断位置的调整
+     */
+    myDetect: function() {
+        let dr = {
+            ratio: 1,
+            x_offset: 0,
+            y_offset: 0,
+        };
+        let focus_window = global.display.get_focus_window();
+        if (!focus_window) {
+            return dr;
+        }
+        let title = focus_window.get_title();
+        if (!title) {
+            return dr;
+        }
+        if (title.endsWith(' - Google Chrome')) {
+            return {
+                ratio: 0.5,
+                x_offset: 0,
+                y_offset: 0,
+            };
+        }
+        if (title.indexOf(' Visual Studio Code') !== -1) {
+            return {
+                ratio: 2,
+                x_offset: 0,
+                y_offset: 40,
+            };
+        }
+        return dr;
+    },
     show: function() {
             this.actor.opacity=255;
             this.actor.show();
