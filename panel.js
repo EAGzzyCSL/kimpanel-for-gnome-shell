@@ -258,13 +258,6 @@ const InputPanel = new Lang.Class({
                 y_offset: 0,
             };
         }
-        if (title.indexOf(' Visual Studio Code') !== -1) {
-            return {
-                ratio: 2,
-                x_offset: 0,
-                y_offset: 40,
-            };
-        }
         return dr;
     },
     show: function() {
